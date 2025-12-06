@@ -292,7 +292,7 @@ async function loadAsteroids() {
 
         status.innerText = `Asteroids Found: ${list.length}`;
 
-        list.slice(0, 20).forEach(ast => {
+        list.slice(0, 24).forEach(ast => {
             const name = ast.name;
             const size = ast.estimated_diameter.kilometers.estimated_diameter_max.toFixed(2);
             const speed = ast.close_approach_data[0].relative_velocity.kilometers_per_hour.split(".")[0];
