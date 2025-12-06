@@ -168,7 +168,6 @@ button:hover {
         <h1>Mars Through the Rover’s Eye</h1>
         <p style="text-align:center;">"Journey across the Red Planet, one photo at a time."</p>
 
-        <!-- FIXED: Added id="roverControls" -->
         <div class="controls" id="roverControls">
             <select id="roverSelect">
                 <option value="curiosity">Curiosity</option>
@@ -198,7 +197,6 @@ function showAsteroids(event) {
     document.getElementById("status").innerText = "";
     document.getElementById("photoGrid").innerHTML = "";
 
-    // Now works because roverControls exists
     document.getElementById("roverControls").style.display = "none";
     document.getElementById("asteroidControls").style.display = "block";
 }
@@ -208,7 +206,6 @@ async function loadPhotos() {
     const status = document.getElementById("status");
     const grid = document.getElementById("photoGrid");
 
-    // Show rover controls again
     document.getElementById("asteroidControls").style.display = "none";
     document.getElementById("roverControls").style.display = "block";
 
@@ -292,7 +289,7 @@ async function loadAsteroids() {
 
         status.innerText = `Asteroids Found: ${list.length}`;
 
-        list.slice(0, 20).forEach(ast => {
+        list.slice(0, 12).forEach(ast => {
             const name = ast.name;
             const size = ast.estimated_diameter.kilometers.estimated_diameter_max.toFixed(2);
             const speed = ast.close_approach_data[0].relative_velocity.kilometers_per_hour.split(".")[0];
@@ -324,7 +321,6 @@ function goHome(event) {
     event.preventDefault();
     document.getElementById("roverControls").style.display = "block";
     document.getElementById("asteroidControls").style.display = "none";
-
 
     document.getElementById("status").innerText = "";
     document.getElementById("photoGrid").innerHTML = "";
