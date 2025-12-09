@@ -152,7 +152,52 @@ button:hover {
     from { transform: scale(0.85); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
-</style>
+#searchControls {
+    text-align: center;
+    margin: 20px 0;
+    display: none;
+}
+#searchInput {
+    padding: 10px 14px;
+    width: 320px;
+    max-width: 80%;
+    border-radius: 8px;
+    border: 1px solid #d6c8a8;
+    font-size: 15px;
+}
+#searchBtn {
+    padding: 10px 16px;
+    margin-left: 8px;
+    border-radius: 8px;
+    border: none;
+    background:#c9a97b;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+#searchBtn:hover { transform: scale(1.03); }
+
+.tags {
+    margin-top: 12px;
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+.tag {
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 2px solid #b85a63;
+    background: transparent;
+    color: #3a2f27;
+    font-weight: 700;
+    cursor: pointer;
+}
+.tag:hover {
+    background: #f6dede;
+    transform: translateY(-3px);
+}
+    </style>
 </head>
 
 <body>
@@ -160,6 +205,7 @@ button:hover {
         <h2>AstroVision</h2>
         <div class="nav-links">  
            <a href="#" onclick="goHome(event)">Home</a>
+           <a href="#" onclick="openSearch(event)">Search</a>
             <a href="#" onclick="showAsteroids(event)">Asteroids</a>
         </div>
     </div>
@@ -167,6 +213,19 @@ button:hover {
     <div class="container">
         <h1>Mars Through the Rover’s Eye</h1>
         <p style="text-align:center;">"Journey across the Red Planet, one photo at a time."</p>
+        <div class="controls" id="searchControls" style="display:none;">
+            <input id="searchInput" type="text" placeholder="Search NASA images" />
+            <button id="searchBtn">Search NASA</button>
+
+            <div class="tags" style="margin-top:8px;">
+                <button class="tag" data-q="Saturn">Saturn</button>
+                <button class="tag" data-q="Galaxy">Galaxy</button>
+                <button class="tag" data-q="Nebula">Nebula</button>
+                <button class="tag" data-q="ISS">ISS</button>
+                <button class="tag" data-q="Apollo">Apollo</button>
+                <button class="tag" data-q="Hubble">Hubble</button>
+            </div>
+        </div>
 
         <div class="controls" id="roverControls">
             <select id="roverSelect">
@@ -191,6 +250,106 @@ button:hover {
     </div>
 
 <script>
+function clearResults() {
+    document.getElementById('photoGrid').innerHTML = '';
+}
+function setStatus(text) {
+    document.getElementById('status').innerText = text || '';
+}
+function openSearch(event) {
+    if (event) event.preventDefault();
+    document.getElementById("searchControls").style.display = "block";
+    document.getElementById("roverControls").style.display = "none";
+    document.getElementById("asteroidControls").style.display = "none";
+
+    setStatus("");
+    clearResults();
+
+    const input = document.getElementById("searchInput");
+    if (input) input.focus();
+}
+async function searchNASA(query) {
+    if (!query) {
+        setStatus('Please type a search term (e.g. Saturn).');
+        return;
+    }
+
+    setStatus('Searching NASA images for "' + query + '" ..');
+    clearResults();
+
+    try {
+        const encoded = encodeURIComponent(query);
+        const url = `https://images-api.nasa.gov/search?q=${encoded}&media_type=image`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const items = data.collection && data.collection.items ? data.collection.items : [];
+
+        if (!items.length) {
+            setStatus('No images found for "' + query + '".');
+            return;
+        }
+
+        setStatus('Found ' + items.length + ' results — showing first 12.');
+
+        const show = items.slice(0, 12);
+        const grid = document.getElementById('photoGrid');
+
+        show.forEach(item => {
+            if (!item.links || !item.links.length) return;
+            const imageUrl = item.links[0].href;
+            const title = (item.data && item.data[0] && item.data[0].title) ? item.data[0].title : 'NASA Image';
+            const date = (item.data && item.data[0] && item.data[0].date_created) ? item.data[0].date_created : '';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${imageUrl}" alt="${escapeHtml(title)}">
+                <p><b>${escapeHtml(title)}</b></p>
+                <p style="font-size:13px;color:#6a5844;">${date}</p>
+            `;
+            grid.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error(err);
+        setStatus('Error fetching NASA images. See console for details.');
+    }
+}
+function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+}
+document.addEventListener('DOMContentLoaded', function () {
+    const sBtn = document.getElementById('searchBtn');
+    if (sBtn) {
+        sBtn.addEventListener('click', function () {
+            const q = document.getElementById('searchInput').value.trim();
+            searchNASA(q);
+        });
+    }
+    const sInput = document.getElementById('searchInput');
+    if (sInput) {
+        sInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchBtn').click();
+            }
+        });
+    }
+    document.querySelectorAll('.tag').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const q = this.getAttribute('data-q');
+            document.getElementById('searchInput').value = q;
+            searchNASA(q);
+        });
+    });
+});
+
 function showAsteroids(event) {
     event.preventDefault();
 
@@ -199,6 +358,7 @@ function showAsteroids(event) {
 
     document.getElementById("roverControls").style.display = "none";
     document.getElementById("asteroidControls").style.display = "block";
+    document.getElementById("searchControls").style.display = "none";
 }
 
 async function loadPhotos() {
@@ -225,7 +385,7 @@ async function loadPhotos() {
             return;
         }
 
-        status.innerText = `Photos Found: ${items.length}`;
+        status.innerText = 'Found ' + items.length + ' photos — showing first 12.';
 
         items.slice(0, 12).forEach(item => {
 
@@ -264,6 +424,14 @@ async function loadAsteroids() {
         status.innerText = "Please select both start and end dates.";
         return;
     }
+    const sDate = new Date(start);
+    const eDate = new Date(end);
+    const timeDiff = eDate - sDate;
+    const days = (timeDiff / (1000 * 60 * 60 * 24)) + 1;
+    if (days > 8) {
+        status.innerText = "Please choose a date range of 7 days or less.";
+        return;
+    }
 
     status.innerText = "Loading asteroid data..";
     grid.innerHTML = "";
@@ -287,7 +455,7 @@ async function loadAsteroids() {
             });
         }
 
-        status.innerText = `Asteroids Found: ${list.length}`;
+        status.innerText = 'Found ' + list.length + ' asteroids — showing first 12.';
 
         list.slice(0, 12).forEach(ast => {
             const name = ast.name;
@@ -321,6 +489,7 @@ function goHome(event) {
     event.preventDefault();
     document.getElementById("roverControls").style.display = "block";
     document.getElementById("asteroidControls").style.display = "none";
+    document.getElementById("searchControls").style.display = "none";
 
     document.getElementById("status").innerText = "";
     document.getElementById("photoGrid").innerHTML = "";
