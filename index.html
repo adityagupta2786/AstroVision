@@ -458,6 +458,7 @@ async function loadAsteroids() {
         status.innerText = 'Found ' + list.length + ' asteroids — showing first 12.';
 
         list.slice(0, 12).forEach(ast => {
+        list.slice(0, 12).forEach(ast => {
             const name = ast.name;
             const size = ast.estimated_diameter.kilometers.estimated_diameter_max.toFixed(2);
             const speed = ast.close_approach_data[0].relative_velocity.kilometers_per_hour.split(".")[0];
@@ -497,3 +498,4 @@ function goHome(event) {
 </script>
 </body>
 </html>
+
