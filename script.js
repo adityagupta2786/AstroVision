@@ -1,4 +1,4 @@
-<script>
+
 function clearResults() {
     document.getElementById('photoGrid').innerHTML = '';
 }
@@ -243,4 +243,3 @@ function goHome(event) {
     document.getElementById("status").innerText = "";
     document.getElementById("photoGrid").innerHTML = "";
 }
-</script>
